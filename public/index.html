@@ -34,15 +34,46 @@
         }
         #result {
             margin-top: 20px;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
             background-color: #f9f9f9;
+            overflow-x: auto;
         }
-        #result textarea {
+        #result table {
+            border-collapse: collapse;
             width: 100%;
-            height: 200px;
-            resize: none;
+        }
+        #result th, #result td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        #result th {
+            background-color: #007bff;
+            color: white;
+        }
+        #result th:first-child, #result td:first-child {
+            border-left: none;
+        }
+        #result th:last-child, #result td:last-child {
+            border-right: none;
+        }
+        #searchingMessage {
+            margin-top: 10px;
+            color: #888;
+            display: none;
+        }
+        .loader {
+            border: 6px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 6px solid #3498db;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: auto;
+            margin-top: 20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
@@ -52,20 +83,74 @@
         <label for="ani">Enter ANI:</label>
         <input type="text" id="ani" name="ani">
         <button type="submit">Search</button>
+        <div id="searchingMessage">Searching...</div>
+        <div class="loader" id="loader" style="display: none;"></div>
     </form>
     <div id="result">
         <h2>Search Result</h2>
-        <textarea id="resultText" readonly></textarea>
+        <table id="resultTable">
+            <!-- Table content will be inserted dynamically using JavaScript -->
+        </table>
     </div>
 
     <script>
-        document.getElementById('searchForm').addEventListener('submit', async function (event) {
+        const searchForm = document.getElementById('searchForm');
+        const resultTable = document.getElementById('resultTable');
+        const searchingMessage = document.getElementById('searchingMessage');
+        const loader = document.getElementById('loader');
+
+        searchForm.addEventListener('submit', async function(event) {
             event.preventDefault();
+            showLoader();
             const ani = document.getElementById('ani').value;
             const response = await fetch(`/search/${ani}`);
             const data = await response.json();
-            document.getElementById('resultText').value = JSON.stringify(data, null, 2);
+            hideLoader();
+            displayResult(data);
         });
+
+        function showLoader() {
+            searchingMessage.style.display = 'block';
+            loader.style.display = 'block';
+        }
+
+        function hideLoader() {
+            searchingMessage.style.display = 'none';
+            loader.style.display = 'none';
+        }
+
+        function displayResult(data) {
+            if (Array.isArray(data) && data.length > 0) {
+                // Clear previous results
+                resultTable.innerHTML = '';
+
+                // Remove _id column and add customer_info column
+                const keys = Object.keys(data[0]).filter(key => key !== '_id');
+                keys.unshift('customer_info');
+
+                // Create header row
+                const headerRow = document.createElement('tr');
+                keys.forEach(key => {
+                    const th = document.createElement('th');
+                    th.textContent = key;
+                    headerRow.appendChild(th);
+                });
+                resultTable.appendChild(headerRow);
+
+                // Create data rows
+                data.forEach(item => {
+                    const row = document.createElement('tr');
+                    keys.forEach(key => {
+                        const td = document.createElement('td');
+                        td.textContent = key === 'customer_info' ? item.customer_info : item[key];
+                        row.appendChild(td);
+                    });
+                    resultTable.appendChild(row);
+                });
+            } else {
+                resultTable.innerHTML = '<tr><td colspan="100%">No data found.</td></tr>';
+            }
+        }
     </script>
 </body>
 </html>

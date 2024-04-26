@@ -8,7 +8,8 @@ const yourSchema = new mongoose.Schema({
     violationscore: { type: Number, required: true },
     spamreason: { type: String, required: true },
     attest: { type: String, required: true },
-    count: { type: Number, required: true }
+    count: { type: Number, required: true },
+    customer_info: { type: String, required: true }
 });
 
 const YourModel = mongoose.model('YourModel', yourSchema);
