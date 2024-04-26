@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search ANI</title>
+</head>
+<body>
+    <h1>Search ANI</h1>
+    <form id="searchForm">
+        <label for="ani">Enter ANI:</label>
+        <input type="text" id="ani" name="ani">
+        <button type="submit">Search</button>
+    </form>
+    <div id="result"></div>
+
+    <script>
+        document.getElementById('searchForm').addEventListener('submit', async function (event) {
+            event.preventDefault();
+            const ani = document.getElementById('ani').value;
+            const response = await fetch(`/search/${ani}`);
+            const data = await response.json();
+            document.getElementById('result').innerText = JSON.stringify(data, null, 2);
+        });
+    </script>
+</body>
+</html>
